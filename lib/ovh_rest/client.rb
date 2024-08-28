@@ -11,7 +11,7 @@ module OvhRest
     attr_writer :client
 
     # rubocop:disable Metrics/ParameterLists
-    def initialize(application_key:, application_secret:, consumer_key:, api_url: OVH_API, api_version: VERSION, logger: nil)
+    def initialize(application_key:, application_secret:, consumer_key:, api_url: OVH_API, api_version: VERSION, logger: nil) # rubocop:disable Layout/LineLength
       @api_url            = api_url
       @api_version        = api_version
       @api_uri            = "#{api_url}/#{api_version}"

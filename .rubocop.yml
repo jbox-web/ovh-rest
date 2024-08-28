@@ -11,23 +11,29 @@ AllCops:
     - bin/*
     - lib/ovh-rest.rb
 
-Gemspec/DevelopmentDependencies:
-  Enabled: false
-
 Gemspec/RequireMFA:
   Enabled: false
+
+#########
+# STYLE #
+#########
 
 Style/Documentation:
   Enabled: false
 
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+
 Style/TrailingCommaInHashLiteral:
-  EnforcedStyleForMultiline: comma
-
-Layout/HashAlignment:
-  Enabled: false
-
-Layout/LineLength:
-  Enabled: false
+  EnforcedStyleForMultiline: consistent_comma
 
 Layout/FirstHashElementIndentation:
   EnforcedStyle: consistent
+
+##########
+# LAYOUT #
+##########
+
+Layout/HashAlignment:
+  EnforcedColonStyle: table
+  EnforcedHashRocketStyle: table

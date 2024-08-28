@@ -10,7 +10,7 @@ RSpec.describe OvhRest::Client do
   let(:conn) { Faraday.new(url: OvhRest::Client::OVH_API) { |b| b.adapter(:test, stubs) } }
 
   # WeatherClient with the stubbed connection object injected
-  let(:client) { described_class.new(application_key: 'foo', application_secret: 'bar', consumer_key: 'baz').tap { |o| o.client = conn } }
+  let(:client) { described_class.new(application_key: 'foo', application_secret: 'bar', consumer_key: 'baz').tap { |o| o.client = conn } } # rubocop:disable Layout/LineLength
 
   # Clear default connection to prevent it from being cached between different tests.
   # This allows for each test to have its own set of stubs
@@ -25,7 +25,7 @@ RSpec.describe OvhRest::Client do
   end
 
   describe '#build_headers' do
-    # rubocop:disable RSpec/ExampleLength
+    # rubocop:disable RSpec/ExampleLength, Layout/LineLength
     it 'calls ovh api' do
       headers = client.build_headers(method: 'GET', path: '/sms/sms-aa12345-1')
 
@@ -35,15 +35,16 @@ RSpec.describe OvhRest::Client do
       url                = 'https://eu.api.ovh.com/1.0/sms/sms-aa12345-1'
       body               = {}.to_json
       timestamp          = Time.now.to_i.to_s
+      signature          = "$1$#{Digest::SHA1.hexdigest("#{application_secret}+#{consumer_key}+#{method}+#{url}+#{body}+#{timestamp}")}"
 
       expect(headers).to eq({
         'X-Ovh-Application' => 'foo',
         'X-Ovh-Consumer'    => 'baz',
-        'X-Ovh-Signature'   => "$1$#{Digest::SHA1.hexdigest("#{application_secret}+#{consumer_key}+#{method}+#{url}+#{body}+#{timestamp}")}",
+        'X-Ovh-Signature'   => signature,
         'X-Ovh-Timestamp'   => timestamp,
       })
     end
-    # rubocop:enable RSpec/ExampleLength
+    # rubocop:enable RSpec/ExampleLength, Layout/LineLength
   end
 
   # rubocop:disable RSpec/NoExpectationExample
