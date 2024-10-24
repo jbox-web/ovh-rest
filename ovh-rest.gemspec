@@ -13,10 +13,10 @@ Gem::Specification.new do |s|
   s.description = 'OVH Rest client'
   s.license     = 'MIT'
 
-  s.required_ruby_version = '>= 3.0.0'
+  s.required_ruby_version = '>= 3.1.0'
 
   s.files = Dir['README.md', 'LICENSE', 'lib/**/*.rb']
 
   s.add_dependency 'faraday'
-  s.add_dependency 'zeitwerk'
+  s.add_dependency 'zeitwerk', '~> 2.6.0'
 end
