@@ -25,7 +25,7 @@ RSpec.describe OvhRest::Client do
   end
 
   describe '#build_headers' do
-    # rubocop:disable RSpec/ExampleLength, Layout/LineLength
+    # rubocop:disable RSpec/ExampleLength
     it 'calls ovh api' do
       headers = client.build_headers(method: 'GET', path: '/sms/sms-aa12345-1')
 
@@ -44,7 +44,7 @@ RSpec.describe OvhRest::Client do
         'X-Ovh-Timestamp'   => timestamp,
       })
     end
-    # rubocop:enable RSpec/ExampleLength, Layout/LineLength
+    # rubocop:enable RSpec/ExampleLength
   end
 
   # rubocop:disable RSpec/NoExpectationExample
