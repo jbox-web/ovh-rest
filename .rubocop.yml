@@ -7,6 +7,11 @@ plugins:
 AllCops:
   NewCops: enable
   TargetRubyVersion: 3.2
+  # Merge our exclusions with RuboCop's defaults (vendor/**/*, etc.) instead of
+  # replacing them, so a vendored bundle (CI bundler-cache) is never inspected.
+  inherit_mode:
+    merge:
+      - Exclude
   Exclude:
     - bin/*
     - lib/ovh-rest.rb
