@@ -5,7 +5,9 @@ source 'https://rubygems.org'
 gemspec
 
 # Dev libs
-gem 'irb'
+# irb is only needed for bin/console; scope it to MRI so it does not drag rdoc
+# -> rbs (a native extension that fails to build on JRuby) into the bundle.
+gem 'irb', platforms: :mri
 gem 'rake'
 gem 'rspec'
 gem 'simplecov'
