@@ -3,8 +3,8 @@
 [![GitHub license](https://img.shields.io/github/license/jbox-web/ovh-rest.svg)](https://github.com/jbox-web/ovh-rest/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/jbox-web/ovh-rest.svg)](https://github.com/jbox-web/ovh-rest/releases/latest)
 [![CI](https://github.com/jbox-web/ovh-rest/workflows/CI/badge.svg)](https://github.com/jbox-web/ovh-rest/actions)
-[![Code Climate](https://codeclimate.com/github/jbox-web/ovh-rest/badges/gpa.svg)](https://codeclimate.com/github/jbox-web/ovh-rest)
-[![Test Coverage](https://codeclimate.com/github/jbox-web/ovh-rest/badges/coverage.svg)](https://codeclimate.com/github/jbox-web/ovh-rest/coverage)
+[![Maintainability](https://qlty.sh/gh/jbox-web/projects/ovh-rest/maintainability.svg)](https://qlty.sh/gh/jbox-web/projects/ovh-rest)
+[![Code Coverage](https://qlty.sh/gh/jbox-web/projects/ovh-rest/coverage.svg)](https://qlty.sh/gh/jbox-web/projects/ovh-rest)
 
 OVH Rest client is a tiny helper library based on [faraday](https://github.com/lostisland/faraday), wrapping the authentication parts and simplifying interaction with OVH API in Ruby programs.
 
@@ -25,7 +25,7 @@ then run `bundle install`.
 ```ruby
 require 'ovh-rest'
 
-ovh = OvhRest::Client.new(
+ovh = OvhRest.new( # shortcut for OvhRest::Client.new
   application_key: <application_key>,
   application_secret: <application_secret>,
   consumer_key: <consumer_key>
@@ -51,7 +51,7 @@ result = ovh.post("/sms/sms-xx12345-1/jobs", {
   "class" => "phoneDisplay",
   "coding" => "7bit",
   "priority" => "high",
-  "validityPeriod" => 2880
+  "validityPeriod" => 2880,
   "message" => "Dude! Disk is CRITICAL!",
   "receivers" => ["+12345678900", "+12009876543"],
   "sender" => "+12424242424",
@@ -76,7 +76,14 @@ and `PATCH` parameters are sent as a JSON body:
 ovh.get("/me/bill", { "date" => "2024-01" })
 ```
 
-The supported verbs are `get`, `post`, `put`, `patch` and `delete`.
+The supported verbs are `get`, `head`, `post`, `put`, `patch` and `delete`.
+
+You can pass extra request headers (for example to use the OVH batch mode);
+they are merged in but never override the signed authentication headers:
+
+```ruby
+ovh.get("/dedicated/server/ns1,ns2", {}, headers: { "X-Ovh-Batch" => "," })
+```
 
 ## Obtaining a consumer key
 
@@ -103,6 +110,12 @@ ovh.request_consumer_key(
 # }
 ```
 
+Inspect the credential currently in use (scope, status, expiration) with:
+
+```ruby
+ovh.current_credential
+```
+
 ## Configuration
 
 ```ruby
@@ -116,9 +129,14 @@ ovh = OvhRest::Client.new(
   open_timeout:       10,  # connection-open timeout in seconds
   time_delta:         0,     # offset added to the local clock when signing
   auto_sync_time:     false, # sync the clock once before the first request
+  retries:            0,     # retry idempotent requests on 429/5xx (0 = off)
   logger:             nil    # a Faraday-compatible logger
 )
 ```
+
+When `retries` is greater than zero, idempotent requests (never `POST`) are
+retried on rate limiting (`429`) and transient server errors (`5xx`) with
+exponential backoff, honoring the `Retry-After` header.
 
 Credential headers (`X-Ovh-Application`, `X-Ovh-Consumer`, `X-Ovh-Signature`)
 are automatically redacted from the logger output.
@@ -138,19 +156,33 @@ Or let the client sync lazily before the first signed request by passing
 
 ## Error handling
 
-Any `4xx`/`5xx` response raises `OvhRest::ApiError`, and transport failures
-(timeouts, connection errors) raise `OvhRest::Error`. Both descend from
-`OvhRest::Error`, so you never need to rescue Faraday classes directly:
+A `4xx` response raises `OvhRest::ClientError`, a `5xx` raises
+`OvhRest::ServerError` (both subclasses of `OvhRest::ApiError`), and transport
+failures (timeouts, connection errors) raise `OvhRest::Error`. Everything
+descends from `OvhRest::Error`, so you never need to rescue Faraday classes
+directly:
 
 ```ruby
 begin
   ovh.get("/me")
-rescue OvhRest::ApiError => e
+rescue OvhRest::ClientError => e   # 4xx
   e.message     # OVH error message
   e.error_code  # OVH "errorCode", e.g. "INVALID_CREDENTIAL"
   e.http_code   # OVH "httpCode", e.g. "403 Forbidden"
   e.status      # HTTP status, e.g. 403
-rescue OvhRest::Error => e
-  # transport-level failure
+rescue OvhRest::ServerError => e   # 5xx
+  e.status
+rescue OvhRest::Error => e         # transport-level failure
+  e.message
 end
+```
+
+## Documentation
+
+The public API is documented with [YARD](https://yardoc.org/). Generate and
+browse it locally with:
+
+```bash
+bin/yard doc   # outputs to doc/
+bin/yard server
 ```

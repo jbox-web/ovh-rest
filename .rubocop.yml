@@ -45,7 +45,7 @@ Layout/HashAlignment:
 # The client funnels every verb through a single class with a handful of
 # small private helpers; a slightly higher ceiling keeps it cohesive.
 Metrics/ClassLength:
-  Max: 150
+  Max: 185
 
 Metrics/MethodLength:
   Max: 15

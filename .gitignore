@@ -8,6 +8,10 @@ gemfiles/*.lock
 # Ignore test files
 coverage/
 
+# Ignore generated YARD documentation
+.yardoc/
+doc/
+
 # Ignore dummy app files
 spec/dummy/db/*.sqlite3
 spec/dummy/db/*.sqlite3-*

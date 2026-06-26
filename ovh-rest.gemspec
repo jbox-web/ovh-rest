@@ -18,5 +18,6 @@ Gem::Specification.new do |s|
   s.files = Dir['README.md', 'CHANGELOG.md', 'LICENSE', 'lib/**/*.rb']
 
   s.add_dependency 'faraday'
+  s.add_dependency 'faraday-retry'
   s.add_dependency 'zeitwerk'
 end
