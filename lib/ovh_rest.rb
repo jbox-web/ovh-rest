@@ -2,6 +2,7 @@
 
 # require ruby dependencies
 require 'digest'
+require 'uri'
 
 # require external dependencies
 require 'faraday'

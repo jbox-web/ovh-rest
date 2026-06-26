@@ -15,7 +15,7 @@ Put this in your `Gemfile` :
 ```ruby
 git_source(:github){ |repo_name| "https://github.com/#{repo_name}.git" }
 
-gem 'ovh', github: 'jbox-web/ovh-rest', tag: '1.0.0'
+gem 'ovh-rest', github: 'jbox-web/ovh-rest', tag: '1.0.0'
 ```
 
 then run `bundle install`.
@@ -66,4 +66,91 @@ puts YAML.dump(result)
     12346
   ]
 }
+```
+
+`GET` and `DELETE` parameters are sent as a query string, while `POST`, `PUT`
+and `PATCH` parameters are sent as a JSON body:
+
+```ruby
+# => GET /1.0/me/bill?date=2024-01
+ovh.get("/me/bill", { "date" => "2024-01" })
+```
+
+The supported verbs are `get`, `post`, `put`, `patch` and `delete`.
+
+## Obtaining a consumer key
+
+If you don't have a consumer key yet, start the OVH credential flow. The call is
+unsigned and only needs the application key; the response carries a
+`consumerKey` and a `validationUrl` the end user must visit to activate it:
+
+```ruby
+ovh = OvhRest::Client.new(
+  application_key:    <application_key>,
+  application_secret: <application_secret>,
+  consumer_key:       nil,
+)
+
+ovh.request_consumer_key(
+  [{ "method" => "GET", "path" => "/*" }],
+  redirection: "https://example.com/callback", # optional
+)
+# =>
+# {
+#   "consumerKey"   => "...",
+#   "validationUrl" => "https://...",
+#   "state"         => "pendingValidation"
+# }
+```
+
+## Configuration
+
+```ruby
+ovh = OvhRest::Client.new(
+  application_key:    <application_key>,
+  application_secret: <application_secret>,
+  consumer_key:       <consumer_key>,
+  api_url:            "https://eu.api.ovh.com", # endpoint (eu/ca/us)
+  api_version:        "1.0",
+  timeout:            30,  # request timeout in seconds
+  open_timeout:       10,  # connection-open timeout in seconds
+  time_delta:         0,     # offset added to the local clock when signing
+  auto_sync_time:     false, # sync the clock once before the first request
+  logger:             nil    # a Faraday-compatible logger
+)
+```
+
+Credential headers (`X-Ovh-Application`, `X-Ovh-Consumer`, `X-Ovh-Signature`)
+are automatically redacted from the logger output.
+
+### Clock skew
+
+OVH rejects requests whose signature timestamp drifts too far from its own
+clock. On a host with an unreliable clock, sync once against OVH's time
+endpoint; the computed offset is reused for every subsequent request:
+
+```ruby
+ovh.synchronize_time!
+```
+
+Or let the client sync lazily before the first signed request by passing
+`auto_sync_time: true` to the constructor.
+
+## Error handling
+
+Any `4xx`/`5xx` response raises `OvhRest::ApiError`, and transport failures
+(timeouts, connection errors) raise `OvhRest::Error`. Both descend from
+`OvhRest::Error`, so you never need to rescue Faraday classes directly:
+
+```ruby
+begin
+  ovh.get("/me")
+rescue OvhRest::ApiError => e
+  e.message     # OVH error message
+  e.error_code  # OVH "errorCode", e.g. "INVALID_CREDENTIAL"
+  e.http_code   # OVH "httpCode", e.g. "403 Forbidden"
+  e.status      # HTTP status, e.g. 403
+rescue OvhRest::Error => e
+  # transport-level failure
+end
 ```

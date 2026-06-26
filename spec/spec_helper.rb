@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'logger'
+require 'stringio'
 require 'simplecov'
 require 'simplecov_json_formatter'
 

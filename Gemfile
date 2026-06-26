@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 gemspec
 
 # Dev libs
+gem 'irb'
 gem 'rake'
 gem 'rspec'
 gem 'simplecov'

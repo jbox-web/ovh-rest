@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bundler/setup'
+require 'irb'
+require 'ovh-rest'
+
+# Drop into an IRB session with the gem already loaded. Build a client with:
+#
+#   ovh = OvhRest::Client.new(
+#     application_key:    ENV.fetch('OVH_APPLICATION_KEY'),
+#     application_secret: ENV.fetch('OVH_APPLICATION_SECRET'),
+#     consumer_key:       ENV.fetch('OVH_CONSUMER_KEY'),
+#   )
+#
+IRB.start(__FILE__)
